@@ -14,7 +14,7 @@ def send_wechat(msg):
     print(r.text)
 
 def send_slack(msg):
-    url = "https://hooks.slack.com/services/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"
+    url = "https://hooks.slack.com/services/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"
     payload = {
     "channel": "#gas_price",
     "username": "gas",
