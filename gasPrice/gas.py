@@ -3,9 +3,9 @@ import time
 import requests
 from bs4 import BeautifulSoup
 
-def send_wechat(msg):
+def send_wechat(title,msg):
     token = '9b4ab34af3644367b38ffc32a4bfa295'#前边复制到那个token
-    title = 'gas price'
+    # title = 'gas price'
     topic = 'gasPrice'
     content = msg
     template = 'html'
@@ -48,12 +48,14 @@ def send_gas_prices():
             if latest_two_days:
                 # 初始化消息列表
                 messages = []
+                dates = []
 
                 # 循环遍历最近两天
                 for day_li in latest_two_days:
                     # 查找日期
                     day_text = day_li.find('span', class_='daytext').string.strip()
                     date_text = day_li.find('span', class_='datetext').string.strip()
+                    dates.append(date_text)
 
                     # 查找 Regular fuel price
                     regular_fuel = day_li.find('div', class_='fueltitle', string='Regular')
@@ -71,12 +73,14 @@ def send_gas_prices():
                             messages.append(message)
 
                 # 将消息列表组合成一个字符串，并通过微信发送
+                final_date = " -> ".join(dates)
                 final_message = " --> ".join(messages)
 
+                print(final_date)
                 print(final_message)
 
                 # 发送文本消息
-                send_wechat(final_message)
+                send_wechat(final_date, final_message)
                 #send_slack(final_message)
             else:
                 print("Could not find information for the latest day.")
