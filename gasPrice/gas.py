@@ -1,6 +1,7 @@
 import schedule
 import time
 import requests
+from datetime import datetime
 from bs4 import BeautifulSoup
 
 def send_wechat(title,msg):
@@ -12,6 +13,9 @@ def send_wechat(title,msg):
     url = f"https://www.pushplus.plus/send?token={token}&title={title}&content={content}&template={template}&topic={topic}"
     print(url)
     r = requests.get(url=url)
+
+    current_time_time_module = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    print(current_time_time_module)
     print(r.text)
 
 def send_slack(msg):
@@ -23,6 +27,9 @@ def send_slack(msg):
     "icon_emoji": ":ghost:"
     }
     response = requests.post(url, json=payload)
+
+    current_time_time_module = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    print(current_time_time_module)
     print(response.text)
 
 
@@ -31,8 +38,10 @@ url = "https://gaswizard.ca/gas-prices/vancouver/"
 
 # 定时任务的逻辑函数
 def send_gas_prices():
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"}
     # 使用 requests 库获取网页内容
     response = requests.get(url)
+    weekdays_cn = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
 
     # 检查请求是否成功
     if response.status_code == 200:
@@ -53,9 +62,18 @@ def send_gas_prices():
                 # 循环遍历最近两天
                 for day_li in latest_two_days:
                     # 查找日期
-                    day_text = day_li.find('span', class_='daytext').string.strip()
                     date_text = day_li.find('span', class_='datetext').string.strip()
-                    dates.append(date_text)
+                    date_object = datetime.strptime(date_text, "%b %d, %Y")
+                    # 提取月和日
+                    month = date_object.month
+                    day = date_object.day
+                    weekday_number = date_object.weekday()
+                    weekday_name_cn = weekdays_cn[weekday_number]
+
+                    # 转成字符串并输出
+                    #result_date = f"{month:02d}.{day:02d}{weekday_name_cn}"
+                    #result_date = f"{day:02d}{weekday_name_cn}"
+                    dates.append(weekday_name_cn)
 
                     # 查找 Regular fuel price
                     regular_fuel = day_li.find('div', class_='fueltitle', string='Regular')
@@ -73,7 +91,7 @@ def send_gas_prices():
                             messages.append(message)
 
                 # 将消息列表组合成一个字符串，并通过微信发送
-                final_date = " -> ".join(dates)
+                final_date = " to ".join(dates)
                 final_message = " --> ".join(messages)
 
                 print(final_date)
